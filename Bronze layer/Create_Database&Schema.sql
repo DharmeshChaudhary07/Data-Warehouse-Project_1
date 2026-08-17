@@ -1,6 +1,8 @@
 /*
 
-script
+
+-- Because in MySQL, CREATE SCHEMA is CREATE DATABASE — there's no separate "schema" concept to nest things inside a database.
+-- We will not create schema for our project  
 
 */
 
@@ -12,9 +14,7 @@ create database Datawarehouse;
 
 use datawarehouse;
 
-
--- Because in MySQL, CREATE SCHEMA is CREATE DATABASE — there's no separate "schema" concept to nest things inside a database.
--- We will not create schema for our project  
+---------------------------------------------------------
 
 create schema bronze;
 
