@@ -5,10 +5,15 @@
 DDL Script: Create SIlver Tables
 ===============================================================================
 Script Purpose:
--- Data Cleansing and transforming (as required for all 6 tables)
--- Stored procedure 
--- Error handling 
--- Time required for running the query all 6 seprately and total time.
+1. Truncating the tables 
+2. Data Cleansing and transforming (as required for all 6 tables).
+3. Stored procedure 
+		- Usage 
+			Call datawarehouse.load_silver
+4.Error handling 
+5. Creating error logs 
+6. Though of doing this -> Time required for running the query all 6 seprately and total time.
+	As we are working on my sql it already gives the response time for query
 ===============================================================================
 
 */

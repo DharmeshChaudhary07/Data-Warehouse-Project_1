@@ -8,7 +8,7 @@ Script Purpose:
 
 -- Define the structure of table or Run this script to re-define the DDL structure of 'Silver' Tables.
 
--- Addding one extra column in all the table with current time stamps 
+-- Addding one extra column in all the table with current time stamps. 
 ===============================================================================
 */
 
