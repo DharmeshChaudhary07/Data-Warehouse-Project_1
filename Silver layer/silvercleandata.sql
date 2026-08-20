@@ -1,12 +1,14 @@
-
+	
 
 /*
 ===============================================================================
 DDL Script: Create SIlver Tables
 ===============================================================================
 Script Purpose:
--- Data Cleansing: 
--- for cust_info check for duplicates in primary keys, trim the the first and last name of customer, 
+-- Data Cleansing and transforming (as required for all 6 tables)
+-- Stored procedure 
+-- Error handling 
+-- Time required for running the query all 6 seprately and total time.
 ===============================================================================
 
 */
@@ -37,21 +39,21 @@ begin
     declare start_time datetime;
     declare end_time datetime;
     declare v_step varchar(100);
+    
+	declare continue handler for sqlexception
+    begin
+        get diagnostics condition 1 @err_state = returned_sqlstate, @err_msg = message_text;
+        insert into datawarehouse.etl_error_log(proc_name, error_state, error_message)
+        values (v_step, @err_state, @err_msg);
+    end;
 
 	set start_time = now();
     select concat('Starting silver layer load at ', start_time) as log_msg;
     
+	set v_step = 'silver_crm_cust_info';
+    
 	-- 1: cust_info
-    block1: begin
-        declare continue handler for sqlexception
-        begin
-            get diagnostics condition 1 @err_state = returned_sqlstate, @err_msg = message_text;
-            insert into datawarehouse.etl_error_log(proc_name, error_state, error_message)
-            values (v_step, @err_state, @err_msg);
-        end;
-
-        set v_step = 'silver_crm_cust_info';
-
+    
 	-- Cleaning data for bronze_cust_info and inserting into silver_crm_cust_info table 
     
 	truncate table Datawarehouse.silver_crm_cust_info;
@@ -88,18 +90,11 @@ begin
 		-- as mysql was not accepting '0000-00-00' we just removed all the rows having cst_create_date = '0000-00-00'
 		-- shouldn't remove that but as it wasn't accepting (tried with case when and casting as well)
 	)t where flag = 1;
-    end block1;
+
 	-- ===============================================================================
 
-	block2: begin
-        declare continue handler for sqlexception
-        begin
-            get diagnostics condition 1 @err_state = returned_sqlstate, @err_msg = message_text;
-            insert into datawarehouse.etl_error_log(proc_name, error_state, error_message)
-            values (v_step, @err_state, @err_msg);
-        end;
 
-        set v_step = 'silver_crm_prd_info';
+	set v_step = 'silver_crm_prd_info';
 	-- Cleaning data for bronze_crm_prd_info and inserting into silver_crm_prd_info table 
 
 	truncate table datawarehouse.silver_crm_prd_info;
@@ -121,19 +116,13 @@ begin
 		cast(prd_start_dt as date) as prd_start_dt,
 		cast(lead(prd_start_dt) over(partition by prd_key order by prd_start_dt) - interval 1 day as date) as prd_end_dt
 	from datawarehouse.bronze_crm_prd_info;
-    block2;
+
 
 	-- ===============================================================================
 
-	block3: begin
-        declare continue handler for sqlexception
-        begin
-            get diagnostics condition 1 @err_state = returned_sqlstate, @err_msg = message_text;
-            insert into datawarehouse.etl_error_log(proc_name, error_state, error_message)
-            values (v_step, @err_state, @err_msg);
-        end;
 
-        set v_step = 'silver_crm_sales_details';
+	set v_step = 'silver_crm_sales_details';
+    
 	-- Cleaning data for bronze_crm_sales_details and inserting into silver_crm_ table 
 
 	truncate table Datawarehouse.silver_crm_sales_details;
@@ -168,19 +157,12 @@ begin
 			else sls_price 
 			end as sls_price
 	from Datawarehouse.bronze_crm_sales_details;
-    end block3;
+
 
 	-- ===============================================================================
 	
-    block4: begin
-        declare continue handler for sqlexception
-        begin
-            get diagnostics condition 1 @err_state = returned_sqlstate, @err_msg = message_text;
-            insert into datawarehouse.etl_error_log(proc_name, error_state, error_message)
-            values (v_step, @err_state, @err_msg);
-        end;
 
-        set v_step = 'silver_erp_cust_az12';
+	set v_step = 'silver_erp_cust_az12';
 	-- Cleaning data for bronze_erp_cust_az12 and inserting into silver_erp_cust_az12 table 
 
 	truncate table Datawarehouse.silver_erp_CUST_AZ12;
@@ -202,19 +184,12 @@ begin
 			else 'N/A'
 			end as gen
 	from datawarehouse.bronze_erp_cust_az12;
-    end block4;
+
 
 	-- ===============================================================================
 
-	block5: begin
-        declare continue handler for sqlexception
-        begin
-            get diagnostics condition 1 @err_state = returned_sqlstate, @err_msg = message_text;
-            insert into datawarehouse.etl_error_log(proc_name, error_state, error_message)
-            values (v_step, @err_state, @err_msg);
-        end;
 
-        set v_step = 'silver_crm_prd_info';
+	set v_step = 'silver_erp_LOC_A101';
 	-- Cleaning data for bronze_erp_loc_a101 and inserting into silver_erp_loc_a101 table 
 
 	truncate table Datawarehouse.silver_erp_LOC_A101;
@@ -232,19 +207,13 @@ begin
 			else 'N/A'
 			end as cntry
 	from datawarehouse.bronze_erp_loc_a101;
-    end block5;
+
 
 	-- ===============================================================================
 
-	block6: begin
-        declare continue handler for sqlexception
-        begin
-            get diagnostics condition 1 @err_state = returned_sqlstate, @err_msg = message_text;
-            insert into datawarehouse.etl_error_log(proc_name, error_state, error_message)
-            values (v_step, @err_state, @err_msg);
-        end;
 
-        set v_step = 'silver_crm_prd_info';
+
+	set v_step = 'silver_erp_PX_CAT_G1V2';
 	-- Cleaning data for bronze_erp_px_cat_g1v2 and inserting into silver_erp_px_cat_g1v2 table 
 
 	truncate table Datawarehouse.silver_erp_PX_CAT_G1V2;
@@ -260,10 +229,8 @@ begin
             else maintenance	
 			end as maintenance
 	from datawarehouse.bronze_erp_px_cat_g1v2;
-    end block6;
-    
-    
-	set end_time = now();
+
+    set end_time = now();
     select concat('Finished silver layer load at ', end_time,
                    ' | Duration (sec): ', timestampdiff(second, start_time, end_time)) as log_msg;
 end $$
@@ -273,6 +240,6 @@ delimiter ;
 
 
 
--- select * from datawarehouse.etl_error_log order by occurred_at desc;
+
 
 
