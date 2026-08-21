@@ -43,3 +43,34 @@ select *
 from cte_check
 where dup_count > 1
 order by customer_id;
+
+-------------
+
+select * from datawarehouse.silver_crm_prd_info;
+select * from datawarehouse.silver_erp_PX_CAT_G1V2;
+
+---------
+
+
+select * from Datawarehouse.silver_crm_sales_details;
+select * from datawarehouse.custview_gold_layer;
+select * from datawarehouse.productview_gold_layer;
+select * from Datawarehouse.salesview_gold_layer;
+
+
+
+--- fact check 
+-- forign key integrity (Dimension)
+
+
+select * 
+from Datawarehouse.salesview_gold_layer as f
+left join datawarehouse.custview_gold_layer as c
+on c.customer_key = f.customer_key
+where c.customer_key is null;
+
+select * 
+from Datawarehouse.salesview_gold_layer as s
+left join datawarehouse.productview_gold_layer as p
+on s.product_key = p.product_key 
+where s.product_key is null;
